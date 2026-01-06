@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* PETRONAS Brand Colors */
+  --petronas-emerald: #00B1A9;
+  --petronas-dark-blue: #0B3C49;
+  --petronas-yellow: #FDB924;
+  --petronas-red: #E31837;
+
+  /* Status Colors */
+  --status-healthy: #00B1A9;
+  --status-caution: #FDB924;
+  --status-warning: #E31837;
+  --status-unknown: #9CA3AF;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F8F9FA;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
