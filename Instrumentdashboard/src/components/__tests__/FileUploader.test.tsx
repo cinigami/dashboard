@@ -73,8 +73,8 @@ describe('FileUploader', () => {
     // Trigger drag over
     fireEvent.dragOver(dropZone);
 
-    // Should add dragging styles (border-blue-500)
-    expect(dropZone.className).toContain('border-blue-500');
+    // Should add dragging styles (border-petronas-emerald)
+    expect(dropZone.className).toContain('border-petronas-emerald');
 
     // Trigger drag leave
     fireEvent.dragLeave(dropZone);

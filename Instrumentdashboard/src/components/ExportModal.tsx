@@ -11,6 +11,8 @@ import type {
 import { exportToPdf } from '../utils/exportPdf';
 import { exportToPowerPoint } from '../utils/exportPpt';
 import { filterAndSortData } from '../utils/filterData';
+import { Modal, Button, Tabs, Tab, Card } from './ui';
+import { PETRONAS_COLORS } from '../utils/colors';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -57,7 +59,9 @@ export default function ExportModal({
   const [selectedColumns, setSelectedColumns] = useState<ExportColumn[]>(
     ALL_COLUMNS.map(c => c.value)
   );
+  const [exportFormat, setExportFormat] = useState<'pdf' | 'pptx'>('pdf');
   const [isExporting, setIsExporting] = useState(false);
+  const [exportStep, setExportStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const availableEquipmentTypes = useMemo(() => {
@@ -121,7 +125,7 @@ export default function ExportModal({
     return `${year}-${month}-${day}`;
   };
 
-  const handleExport = async (format: 'pdf' | 'pptx') => {
+  const handleExport = async () => {
     if (selectedColumns.length === 0) {
       setError('Please select at least one column');
       return;
@@ -134,8 +138,14 @@ export default function ExportModal({
 
     setIsExporting(true);
     setError(null);
+    setExportStep(1);
 
     try {
+      // Step 1: Preparing data
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setExportStep(2);
+
+      // Step 2: Generating document
       const config: ExportConfig = {
         areas: selectedAreas.length > 0 ? selectedAreas : AREAS,
         equipmentTypes: selectedEquipmentTypes,
@@ -143,66 +153,76 @@ export default function ExportModal({
         dateFrom,
         dateTo,
         columns: selectedColumns,
-        filename: `${filename}.${format}`,
+        filename: `${filename}.${exportFormat}`,
       };
 
-      if (format === 'pdf') {
+      if (exportFormat === 'pdf') {
         exportToPdf(previewData, config);
       } else {
         exportToPowerPoint(previewData, config);
       }
 
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setExportStep(3);
+
+      // Step 3: Finalizing
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       setTimeout(() => {
         setIsExporting(false);
+        setExportStep(0);
         onClose();
-      }, 1000);
+      }, 500);
     } catch (err) {
       setError(`Failed to export: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setIsExporting(false);
+      setExportStep(0);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">Export Data</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-            disabled={isExporting}
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      {/* Header */}
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold mb-2" style={{ color: PETRONAS_COLORS.darkBlue }}>
+          Export Dashboard Data
+        </h2>
+        <p className="text-sm text-gray-600">
+          Configure export settings and preview data before generating documents
+        </p>
+      </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Filters */}
+      {/* Two-Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Left Column: Settings */}
+        <div className="space-y-6">
+          {/* Format Tabs */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Export Format</label>
+            <Tabs
+              value={exportFormat}
+              onChange={(value) => setExportFormat(value as 'pdf' | 'pptx')}
+            >
+              <Tab value="pdf">PDF Document</Tab>
+              <Tab value="pptx">PowerPoint Presentation</Tab>
+            </Tabs>
+          </div>
+
+          {/* Export Scope */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Export Scope</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="space-y-4">
               {/* Areas */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Areas</label>
-                <div className="space-y-1 max-h-40 overflow-y-auto border border-gray-300 rounded p-2">
+                <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3">
                   {AREAS.map(area => (
-                    <label key={area} className="flex items-center space-x-2 cursor-pointer">
+                    <label key={area} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                       <input
                         type="checkbox"
                         checked={selectedAreas.includes(area)}
                         onChange={() => handleAreaToggle(area)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-gray-300 text-petronas-emerald focus-premium"
                       />
                       <span className="text-sm text-gray-700">{area}</span>
                     </label>
@@ -215,32 +235,36 @@ export default function ExportModal({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Equipment Types
                 </label>
-                <div className="space-y-1 max-h-40 overflow-y-auto border border-gray-300 rounded p-2">
-                  {availableEquipmentTypes.map(type => (
-                    <label key={type} className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedEquipmentTypes.includes(type)}
-                        onChange={() => handleEquipmentTypeToggle(type)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{type}</span>
-                    </label>
-                  ))}
+                <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                  {availableEquipmentTypes.length === 0 ? (
+                    <p className="text-sm text-gray-500 italic">No data loaded</p>
+                  ) : (
+                    availableEquipmentTypes.map(type => (
+                      <label key={type} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input
+                          type="checkbox"
+                          checked={selectedEquipmentTypes.includes(type)}
+                          onChange={() => handleEquipmentTypeToggle(type)}
+                          className="rounded border-gray-300 text-petronas-emerald focus-premium"
+                        />
+                        <span className="text-sm text-gray-700">{type}</span>
+                      </label>
+                    ))
+                  )}
                 </div>
               </div>
 
               {/* Statuses */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Statuses</label>
-                <div className="space-y-1 border border-gray-300 rounded p-2">
+                <div className="space-y-2 border border-gray-300 rounded-lg p-3">
                   {STATUSES.map(status => (
-                    <label key={status} className="flex items-center space-x-2 cursor-pointer">
+                    <label key={status} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                       <input
                         type="checkbox"
                         checked={selectedStatuses.includes(status)}
                         onChange={() => handleStatusToggle(status)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-gray-300 text-petronas-emerald focus-premium"
                       />
                       <span className="text-sm text-gray-700">{status}</span>
                     </label>
@@ -256,28 +280,30 @@ export default function ExportModal({
                     type="date"
                     value={formatDateForInput(dateFrom)}
                     onChange={e => setDateFrom(e.target.value ? new Date(e.target.value) : null)}
-                    className="block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                    className="block w-full rounded-lg border-gray-300 shadow-sm focus-premium text-sm px-3 py-2"
+                    placeholder="From"
                   />
                   <input
                     type="date"
                     value={formatDateForInput(dateTo)}
                     onChange={e => setDateTo(e.target.value ? new Date(e.target.value) : null)}
-                    className="block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                    className="block w-full rounded-lg border-gray-300 shadow-sm focus-premium text-sm px-3 py-2"
+                    placeholder="To"
                   />
                 </div>
               </div>
 
               {/* Columns */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Columns</label>
-                <div className="grid grid-cols-2 gap-2 border border-gray-300 rounded p-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Columns to Include</label>
+                <div className="grid grid-cols-1 gap-2 border border-gray-300 rounded-lg p-3">
                   {ALL_COLUMNS.map(col => (
-                    <label key={col.value} className="flex items-center space-x-2 cursor-pointer">
+                    <label key={col.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                       <input
                         type="checkbox"
                         checked={selectedColumns.includes(col.value)}
                         onChange={() => handleColumnToggle(col.value)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-gray-300 text-petronas-emerald focus-premium"
                       />
                       <span className="text-sm text-gray-700">{col.label}</span>
                     </label>
@@ -289,48 +315,49 @@ export default function ExportModal({
 
           {/* Filename Preview */}
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Filename Preview</h3>
-            <p className="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded border border-gray-200">
-              {filename}.<span className="text-blue-600">pdf | pptx</span>
-            </p>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Generated Filename</label>
+            <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+              <p className="text-sm font-mono text-gray-900">
+                {filename}.<span style={{ color: PETRONAS_COLORS.emeraldGreen }}>{exportFormat}</span>
+              </p>
+            </div>
           </div>
+        </div>
 
-          {/* Preview */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold text-gray-900">Preview</h3>
+        {/* Right Column: Preview */}
+        <div className="space-y-6">
+          <Card>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Data Preview</h3>
               <span className="text-sm text-gray-600">
                 {previewData.length} {previewData.length === 1 ? 'row' : 'rows'}
               </span>
             </div>
 
             {previewData.length > 2000 && (
-              <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                <p className="text-sm text-yellow-800">
+              <div className="mb-4 p-3 bg-yellow-50 border-l-4 rounded" style={{ borderColor: PETRONAS_COLORS.yellow }}>
+                <p className="text-sm" style={{ color: PETRONAS_COLORS.yellow }}>
                   Warning: Exporting {previewData.length} rows may take a while and result in a large file.
                 </p>
               </div>
             )}
 
-            <div className="border border-gray-200 rounded overflow-hidden max-h-96 overflow-y-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50 sticky top-0">
+            <div className="border border-gray-200 rounded-lg overflow-hidden max-h-96 overflow-y-auto">
+              <table className="table-executive">
+                <thead>
                   <tr>
                     {selectedColumns.map(col => (
-                      <th
-                        key={col}
-                        className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
+                      <th key={col}>
                         {ALL_COLUMNS.find(c => c.value === col)?.label}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody>
                   {previewData.slice(0, 10).map((row, idx) => (
                     <tr key={idx}>
                       {selectedColumns.map(col => (
-                        <td key={col} className="px-4 py-2 text-sm text-gray-900 whitespace-nowrap">
+                        <td key={col} className="whitespace-nowrap">
                           {col === 'notificationDate' ? row.notificationDateDisplay : String(row[col] || '')}
                         </td>
                       ))}
@@ -339,60 +366,89 @@ export default function ExportModal({
                 </tbody>
               </table>
               {previewData.length > 10 && (
-                <div className="bg-gray-50 px-4 py-2 text-sm text-gray-600 text-center">
+                <div className="bg-gray-50 px-4 py-2 text-sm text-gray-600 text-center border-t border-gray-200">
                   Showing 10 of {previewData.length} rows
                 </div>
               )}
             </div>
-          </div>
+          </Card>
+
+          {/* Loading Progress */}
+          {isExporting && (
+            <Card>
+              <h4 className="text-sm font-semibold text-gray-900 mb-4">Export Progress</h4>
+              <div className="space-y-3">
+                <div className={`flex items-center gap-3 p-2 rounded ${exportStep >= 1 ? 'bg-emerald-50' : 'bg-gray-50'}`}>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${exportStep >= 1 ? 'bg-petronas-emerald' : 'bg-gray-300'}`}>
+                    {exportStep > 1 ? (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    )}
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Preparing data...</span>
+                </div>
+
+                <div className={`flex items-center gap-3 p-2 rounded ${exportStep >= 2 ? 'bg-emerald-50' : 'bg-gray-50'}`}>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${exportStep >= 2 ? 'bg-petronas-emerald' : 'bg-gray-300'}`}>
+                    {exportStep > 2 ? (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : exportStep === 2 ? (
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    ) : null}
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Generating document...</span>
+                </div>
+
+                <div className={`flex items-center gap-3 p-2 rounded ${exportStep >= 3 ? 'bg-emerald-50' : 'bg-gray-50'}`}>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${exportStep >= 3 ? 'bg-petronas-emerald' : 'bg-gray-300'}`}>
+                    {exportStep === 3 && (
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    )}
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Finalizing...</span>
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* Error */}
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded">
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
+            <Card>
+              <div className="p-4 bg-red-50 border-l-4 rounded" style={{ borderColor: PETRONAS_COLORS.red }}>
+                <p className="text-sm" style={{ color: PETRONAS_COLORS.red }}>{error}</p>
+              </div>
+            </Card>
           )}
         </div>
-
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-end space-x-3">
-          <button
-            onClick={onClose}
-            disabled={isExporting}
-            className="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => handleExport('pdf')}
-            disabled={isExporting || previewData.length === 0}
-            className="px-4 py-2 bg-blue-600 border border-transparent rounded text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
-          >
-            {isExporting ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Generating PDF...</span>
-              </>
-            ) : (
-              <span>Export PDF</span>
-            )}
-          </button>
-          <button
-            onClick={() => handleExport('pptx')}
-            disabled={isExporting || previewData.length === 0}
-            className="px-4 py-2 bg-green-600 border border-transparent rounded text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
-          >
-            {isExporting ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Generating PowerPoint...</span>
-              </>
-            ) : (
-              <span>Export PowerPoint</span>
-            )}
-          </button>
-        </div>
       </div>
-    </div>
+
+      {/* Footer Actions */}
+      <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-end gap-3">
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={onClose}
+          disabled={isExporting}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="primary"
+          size="md"
+          onClick={handleExport}
+          disabled={isExporting || previewData.length === 0 || selectedColumns.length === 0}
+          isLoading={isExporting}
+        >
+          {isExporting
+            ? `Generating ${exportFormat.toUpperCase()}...`
+            : `Export ${exportFormat.toUpperCase()}`}
+        </Button>
+      </div>
+    </Modal>
   );
 }

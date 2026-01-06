@@ -14,7 +14,9 @@ describe('AlertsTableGrouped', () => {
     render(<AlertsTableGrouped data={mockInstrumentRows} />);
 
     // Mock data has 1 Caution and 2 Warning = 3 alerts total
-    expect(screen.getByText(/3 alerts/)).toBeInTheDocument();
+    // Count is now displayed separately
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText('Alerts')).toBeInTheDocument();
   });
 
   it('should group by equipment type', () => {
@@ -30,10 +32,10 @@ describe('AlertsTableGrouped', () => {
     render(<AlertsTableGrouped data={mockInstrumentRows} />);
 
     // Temperature Transmitter has 1 Warning
-    const warningTexts = screen.getAllByText(/1 Warning/);
+    const warningTexts = screen.getAllByText(/Warning: 1/);
     expect(warningTexts.length).toBeGreaterThan(0);
     // Pressure Transmitter has 1 Caution
-    const cautionTexts = screen.getAllByText(/1 Caution/);
+    const cautionTexts = screen.getAllByText(/Caution: 1/);
     expect(cautionTexts.length).toBeGreaterThan(0);
   });
 
@@ -46,19 +48,21 @@ describe('AlertsTableGrouped', () => {
 
   it('should have local search input', () => {
     render(<AlertsTableGrouped data={mockInstrumentRows} />);
-    expect(screen.getByPlaceholderText('Search alerts...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search by tag, description, or alarm...')).toBeInTheDocument();
   });
 
   it('should filter alerts by local search', async () => {
     const user = userEvent.setup();
     render(<AlertsTableGrouped data={mockInstrumentRows} />);
 
-    const searchInput = screen.getByPlaceholderText('Search alerts...');
+    const searchInput = screen.getByPlaceholderText('Search by tag, description, or alarm...');
     await user.type(searchInput, 'ALS');
 
     // After searching for "ALS", only 2 items should be visible
+    // Count is now displayed separately
     await waitFor(() => {
-      expect(screen.getByText(/2 alerts/)).toBeInTheDocument();
+      expect(screen.getByText('2')).toBeInTheDocument();
+      expect(screen.getByText('Alerts')).toBeInTheDocument();
     });
   });
 

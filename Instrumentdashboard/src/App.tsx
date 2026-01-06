@@ -7,10 +7,12 @@ import DonutGrid from './components/DonutGrid';
 import AlertsTableGrouped from './components/AlertsTableGrouped';
 import ObsolescenceTable from './components/ObsolescenceTable';
 import ExportModal from './components/ExportModal';
+import { Button, Card } from './components/ui';
 import { generateTemplate } from './utils/templateGenerator';
 import { filterAndSortData, getUniqueEquipmentTypes } from './utils/filterData';
 import { saveFilterState, loadFilterState, saveUploadMetadata, loadUploadMetadata } from './utils/storage';
 import type { InstrumentRow, FilterState, Status, UploadMetadata } from './utils/types';
+import { PETRONAS_COLORS } from './utils/colors';
 
 const INITIAL_FILTERS: FilterState = {
   areas: ['Ammonia', 'Utility', 'Urea', 'System', 'Turbomachinery'],
@@ -90,43 +92,55 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+      <header className="bg-white shadow-soft sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-4xl font-bold mb-2" style={{ color: PETRONAS_COLORS.darkBlue }}>
                 Instrument Asset Healthiness
               </h1>
               {uploadMetadata && (
-                <p className="mt-1 text-sm text-gray-500">
-                  Last updated: {format(uploadMetadata.timestamp, 'PPpp')} ({uploadMetadata.filename})
+                <p className="text-sm text-gray-600">
+                  Last updated: {format(uploadMetadata.timestamp, 'PPpp')} • {uploadMetadata.filename}
                 </p>
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-              <button
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <Button
+                variant="secondary"
+                size="md"
                 onClick={handleDownloadTemplate}
-                className="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                leftIcon={
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                }
               >
-                Download Excel Template
-              </button>
+                Download Template
+              </Button>
 
               {rawData.length > 0 && (
-                <button
+                <Button
+                  variant="primary"
+                  size="md"
                   onClick={() => setIsExportModalOpen(true)}
-                  className="px-4 py-2 bg-blue-600 border border-transparent rounded text-sm font-medium text-white hover:bg-blue-700"
+                  leftIcon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  }
                 >
-                  Export
-                </button>
+                  Export Data
+                </Button>
               )}
             </div>
           </div>
 
           {rawData.length === 0 && (
-            <div className="mt-6">
+            <div className="mt-8">
               <FileUploader onDataLoaded={handleDataLoaded} />
             </div>
           )}
@@ -145,9 +159,10 @@ function App() {
 
           {/* Empty State */}
           {filteredData.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-12 text-center">
+            <Card className="p-16 text-center">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className="mx-auto h-16 w-16 mb-6"
+                style={{ color: PETRONAS_COLORS.emeraldGreen }}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -159,13 +174,13 @@ function App() {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No results found</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No results found</h3>
+              <p className="text-sm text-gray-600">
                 Try adjusting your filters to see more data.
               </p>
-            </div>
+            </Card>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* 1. Overall Equipment Healthiness - FULL WIDTH, TOP, MOST PROMINENT */}
               <GaugeCard data={filteredData} />
 
@@ -183,20 +198,21 @@ function App() {
               <ObsolescenceTable data={filteredData} />
 
               {/* Upload New File Section */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <Card className="p-8">
+                <h2 className="text-2xl font-bold mb-6" style={{ color: PETRONAS_COLORS.darkBlue }}>
                   Upload New Data
                 </h2>
                 <FileUploader onDataLoaded={handleDataLoaded} />
-              </div>
+              </Card>
             </div>
           )}
         </main>
       ) : (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-lg shadow p-12 text-center">
+          <Card className="p-16 text-center">
             <svg
-              className="mx-auto h-16 w-16 text-gray-400"
+              className="mx-auto h-20 w-20 mb-6"
+              style={{ color: PETRONAS_COLORS.emeraldGreen }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -208,13 +224,13 @@ function App() {
                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               />
             </svg>
-            <h3 className="mt-4 text-lg font-medium text-gray-900">
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">
               Upload an Excel file to get started
             </h3>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="text-base text-gray-600">
               Download the template to see the required format
             </p>
-          </div>
+          </Card>
         </main>
       )}
 

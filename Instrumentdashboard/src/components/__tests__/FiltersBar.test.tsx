@@ -138,7 +138,7 @@ describe('FiltersBar', () => {
       />
     );
 
-    const clearButton = screen.getByText('Clear All');
+    const clearButton = screen.getByText(/Clear All/);
     await user.click(clearButton);
 
     expect(onFiltersChange).toHaveBeenCalledWith(

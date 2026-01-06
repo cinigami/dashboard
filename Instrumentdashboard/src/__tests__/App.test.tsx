@@ -14,9 +14,9 @@ describe('App', () => {
     expect(screen.getByText('Instrument Asset Healthiness')).toBeInTheDocument();
   });
 
-  it('should render Download Excel Template button', () => {
+  it('should render Download Template button', () => {
     render(<App />);
-    expect(screen.getByText('Download Excel Template')).toBeInTheDocument();
+    expect(screen.getByText('Download Template')).toBeInTheDocument();
   });
 
   it('should show file uploader when no data is loaded', () => {
@@ -27,7 +27,7 @@ describe('App', () => {
 
   it('should not show Export button when no data is loaded', () => {
     render(<App />);
-    expect(screen.queryByText('Export')).not.toBeInTheDocument();
+    expect(screen.queryByText('Export Data')).not.toBeInTheDocument();
   });
 
   it('should call generateTemplate when Download Template is clicked', async () => {
@@ -36,7 +36,7 @@ describe('App', () => {
 
     render(<App />);
 
-    const downloadButton = screen.getByText('Download Excel Template');
+    const downloadButton = screen.getByText('Download Template');
     await user.click(downloadButton);
 
     expect(generateTemplate).toHaveBeenCalled();

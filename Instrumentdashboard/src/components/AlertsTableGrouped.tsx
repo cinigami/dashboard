@@ -8,6 +8,8 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 import type { InstrumentRow } from '../utils/types';
+import { Card, Badge } from './ui';
+import { PETRONAS_COLORS } from '../utils/colors';
 
 interface AlertsTableGroupedProps {
   data: InstrumentRow[];
@@ -70,15 +72,7 @@ export default function AlertsTableGrouped({ data }: AlertsTableGroupedProps) {
       header: 'Status',
       cell: info => {
         const status = info.getValue();
-        const colorClass =
-          status === 'Warning'
-            ? 'bg-red-100 text-red-800'
-            : 'bg-yellow-100 text-yellow-800';
-        return (
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
-            {status}
-          </span>
-        );
+        return <Badge status={status} variant="soft" size="sm" />;
       },
     }),
     columnHelper.accessor('alarmDescription', {
@@ -97,58 +91,74 @@ export default function AlertsTableGrouped({ data }: AlertsTableGroupedProps) {
 
   if (alertsData.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Alerts (Caution & Warning)</h2>
-        <p className="text-center text-gray-500 py-8">No alerts found</p>
-      </div>
+      <Card className="p-8">
+        <h2 className="text-2xl font-bold mb-2" style={{ color: PETRONAS_COLORS.darkBlue }}>
+          Alerts (Caution & Warning)
+        </h2>
+        <p className="text-center text-gray-500 py-12">No alerts found</p>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">
-          Alerts (Caution & Warning)
-        </h2>
-        <div className="text-sm text-gray-500">
-          {filteredData.length} {filteredData.length === 1 ? 'alert' : 'alerts'}
+    <Card className="p-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-3xl font-bold mb-2" style={{ color: PETRONAS_COLORS.darkBlue }}>
+            Alerts (Caution & Warning)
+          </h2>
+          <p className="text-sm text-gray-600">
+            Critical items requiring attention
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-3xl font-bold text-gray-900">{filteredData.length}</p>
+          <p className="text-sm text-gray-500">
+            {filteredData.length === 1 ? 'Alert' : 'Alerts'}
+          </p>
         </div>
       </div>
 
-      <div className="mb-4">
+      {/* Search Bar */}
+      <div className="mb-6">
         <input
           type="text"
           value={localSearch}
           onChange={e => setLocalSearch(e.target.value)}
-          placeholder="Search alerts..."
-          className="block w-full md:w-96 rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+          placeholder="Search by tag, description, or alarm..."
+          className="block w-full md:w-96 rounded-lg border-gray-300 shadow-sm focus-premium text-sm px-4 py-2.5"
         />
       </div>
 
+      {/* Grouped Tables */}
       <div className="space-y-6">
         {groupedData.map(([equipmentType, rows]) => {
           const cautionCount = rows.filter(r => r.status === 'Caution').length;
           const warningCount = rows.filter(r => r.status === 'Warning').length;
 
           return (
-            <div key={equipmentType} className="border border-gray-200 rounded-lg overflow-hidden">
-              {/* Group Header */}
-              <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-semibold text-gray-900">
+            <div key={equipmentType} className="border border-gray-200 rounded-xl overflow-hidden">
+              {/* Group Header with Accent */}
+              <div className="group-header-accent px-6 py-4">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <h3 className="text-lg font-bold text-gray-900">
                     {equipmentType}
                   </h3>
-                  <div className="flex items-center space-x-3 text-sm">
+                  <div className="flex items-center gap-4 text-sm font-medium">
                     {warningCount > 0 && (
-                      <span className="text-red-700">
-                        {warningCount} Warning{warningCount > 1 ? 's' : ''}
+                      <span style={{ color: PETRONAS_COLORS.red }}>
+                        Warning: {warningCount}
                       </span>
                     )}
                     {cautionCount > 0 && (
-                      <span className="text-yellow-700">
-                        {cautionCount} Caution{cautionCount > 1 ? 's' : ''}
+                      <span style={{ color: PETRONAS_COLORS.yellow }}>
+                        Caution: {cautionCount}
                       </span>
                     )}
+                    <span className="text-gray-600">
+                      Total: {rows.length}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -161,7 +171,7 @@ export default function AlertsTableGrouped({ data }: AlertsTableGroupedProps) {
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -186,22 +196,22 @@ function GroupTable({
   });
 
   return (
-    <table className="min-w-full divide-y divide-gray-200">
-      <thead className="bg-gray-50">
+    <table className="table-executive">
+      <thead>
         {table.getHeaderGroups().map(headerGroup => (
           <tr key={headerGroup.id}>
             {headerGroup.headers.map(header => (
               <th
                 key={header.id}
                 onClick={header.column.getToggleSortingHandler()}
-                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-gray-100 transition-colors"
               >
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center gap-2">
                   <span>
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </span>
                   {header.column.getIsSorted() && (
-                    <span>
+                    <span className="text-petronas-emerald">
                       {header.column.getIsSorted() === 'desc' ? '↓' : '↑'}
                     </span>
                   )}
@@ -211,11 +221,11 @@ function GroupTable({
           </tr>
         ))}
       </thead>
-      <tbody className="bg-white divide-y divide-gray-200">
+      <tbody>
         {table.getRowModel().rows.map(row => (
-          <tr key={row.id} className="hover:bg-gray-50">
+          <tr key={row.id}>
             {row.getVisibleCells().map(cell => (
-              <td key={cell.id} className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+              <td key={cell.id} className="whitespace-nowrap">
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </td>
             ))}

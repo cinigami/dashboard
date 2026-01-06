@@ -8,6 +8,8 @@ import {
   SortingState,
 } from '@tanstack/react-table';
 import type { InstrumentRow } from '../utils/types';
+import { Card, Badge } from './ui';
+import { PETRONAS_COLORS } from '../utils/colors';
 
 interface ObsolescenceTableProps {
   data: InstrumentRow[];
@@ -26,6 +28,15 @@ export default function ObsolescenceTable({ data }: ObsolescenceTableProps) {
       row.alarmDescription.toLowerCase().includes('als')
     );
   }, [data]);
+
+  // Count by status
+  const statusCounts = useMemo(() => {
+    const counts = { Healthy: 0, Caution: 0, Warning: 0, Unknown: 0 };
+    alsData.forEach(row => {
+      counts[row.status]++;
+    });
+    return counts;
+  }, [alsData]);
 
   const columns = [
     columnHelper.accessor('area', {
@@ -48,17 +59,7 @@ export default function ObsolescenceTable({ data }: ObsolescenceTableProps) {
       header: 'Status',
       cell: info => {
         const status = info.getValue();
-        const colorClass =
-          status === 'Warning'
-            ? 'bg-red-100 text-red-800'
-            : status === 'Caution'
-            ? 'bg-yellow-100 text-yellow-800'
-            : 'bg-green-100 text-green-800';
-        return (
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
-            {status}
-          </span>
-        );
+        return <Badge status={status} variant="soft" size="sm" />;
       },
     }),
     columnHelper.accessor('alarmDescription', {
@@ -86,45 +87,78 @@ export default function ObsolescenceTable({ data }: ObsolescenceTableProps) {
 
   if (alsData.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <Card className="p-8">
+        <h2 className="text-2xl font-bold mb-2" style={{ color: PETRONAS_COLORS.darkBlue }}>
           Obsolescence Panel (ALS)
         </h2>
-        <p className="text-center text-gray-500 py-8">
+        <p className="text-center text-gray-500 py-12">
           No obsolescence items found
         </p>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">
-          Obsolescence Panel (ALS)
-        </h2>
-        <div className="text-sm text-gray-500">
-          {alsData.length} {alsData.length === 1 ? 'item' : 'items'}
+    <Card className="p-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-3xl font-bold mb-2" style={{ color: PETRONAS_COLORS.darkBlue }}>
+            Obsolescence Panel (ALS)
+          </h2>
+          <p className="text-sm text-gray-600">
+            Assets with obsolescence indicators
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-3xl font-bold text-gray-900">{alsData.length}</p>
+          <p className="text-sm text-gray-500">
+            {alsData.length === 1 ? 'Item' : 'Items'}
+          </p>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      {/* Status Summary */}
+      {(statusCounts.Warning > 0 || statusCounts.Caution > 0) && (
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-6 text-sm font-medium">
+            {statusCounts.Warning > 0 && (
+              <span style={{ color: PETRONAS_COLORS.red }}>
+                Warning: {statusCounts.Warning}
+              </span>
+            )}
+            {statusCounts.Caution > 0 && (
+              <span style={{ color: PETRONAS_COLORS.yellow }}>
+                Caution: {statusCounts.Caution}
+              </span>
+            )}
+            {statusCounts.Healthy > 0 && (
+              <span style={{ color: PETRONAS_COLORS.emeraldGreen }}>
+                Healthy: {statusCounts.Healthy}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Table */}
+      <div className="overflow-x-auto rounded-xl border border-gray-200">
+        <table className="table-executive">
+          <thead>
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
                     onClick={header.column.getToggleSortingHandler()}
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    className="cursor-pointer hover:bg-gray-100 transition-colors"
                   >
-                    <div className="flex items-center space-x-1">
+                    <div className="flex items-center gap-2">
                       <span>
                         {flexRender(header.column.columnDef.header, header.getContext())}
                       </span>
                       {header.column.getIsSorted() && (
-                        <span>
+                        <span className="text-petronas-emerald">
                           {header.column.getIsSorted() === 'desc' ? '↓' : '↑'}
                         </span>
                       )}
@@ -134,11 +168,11 @@ export default function ObsolescenceTable({ data }: ObsolescenceTableProps) {
               </tr>
             ))}
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {table.getRowModel().rows.map(row => (
-              <tr key={row.id} className="hover:bg-gray-50">
+              <tr key={row.id}>
                 {row.getVisibleCells().map(cell => (
-                  <td key={cell.id} className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                  <td key={cell.id} className="whitespace-nowrap">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
@@ -147,6 +181,6 @@ export default function ObsolescenceTable({ data }: ObsolescenceTableProps) {
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
   );
 }

@@ -13,15 +13,17 @@ describe('GaugeCard', () => {
     render(<GaugeCard data={mockInstrumentRows} />);
 
     // Mock data has: 2 Healthy, 1 Caution, 2 Warning
-    // Check that status labels are present along with counts
-    expect(screen.getByText('Healthy')).toBeInTheDocument();
-    expect(screen.getByText('Caution')).toBeInTheDocument();
-    expect(screen.getByText('Warning')).toBeInTheDocument();
+    // Check that status labels are present (now displayed multiple times in the new layout)
+    expect(screen.getAllByText('Healthy').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Caution').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Warning').length).toBeGreaterThan(0);
   });
 
   it('should display total assets count', () => {
     render(<GaugeCard data={mockInstrumentRows} />);
-    expect(screen.getByText(/Total Assets: 5/)).toBeInTheDocument();
+    // The count is now displayed separately: "Total Assets:" and "5"
+    expect(screen.getByText(/Total Assets:/)).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
   });
 
   it('should display score', () => {
@@ -30,26 +32,29 @@ describe('GaugeCard', () => {
     // The gauge card should display a numeric score
     const scoreElement = screen.getAllByText(/\d+/).find(el => {
       const parent = el.closest('text');
-      return parent && parent.getAttribute('class')?.includes('text-3xl');
+      return parent && parent.getAttribute('class')?.includes('text-6xl');
     });
     expect(scoreElement).toBeInTheDocument();
   });
 
   it('should handle empty data', () => {
     render(<GaugeCard data={[]} />);
-    expect(screen.getByText(/Total Assets: 0/)).toBeInTheDocument();
-    // Should show all counts as 0
-    const scoreText = screen.getAllByText('0').filter(el => {
+    // The count is now displayed separately: "Total Assets:" and "0"
+    expect(screen.getByText(/Total Assets:/)).toBeInTheDocument();
+    expect(screen.getAllByText('0').length).toBeGreaterThan(0);
+    // Should show score as 0 with text-6xl class
+    const scoreText = screen.getAllByText('0').find(el => {
       const parent = el.closest('text');
-      return parent && parent.getAttribute('class')?.includes('text-3xl');
+      return parent && parent.getAttribute('class')?.includes('text-6xl');
     });
-    expect(scoreText.length).toBeGreaterThan(0);
+    expect(scoreText).toBeDefined();
   });
 
   it('should display correct status labels', () => {
     render(<GaugeCard data={mockInstrumentRows} />);
-    expect(screen.getByText('Healthy')).toBeInTheDocument();
-    expect(screen.getByText('Caution')).toBeInTheDocument();
-    expect(screen.getByText('Warning')).toBeInTheDocument();
+    // Status labels now appear multiple times in the new layout
+    expect(screen.getAllByText('Healthy').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Caution').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Warning').length).toBeGreaterThan(0);
   });
 });

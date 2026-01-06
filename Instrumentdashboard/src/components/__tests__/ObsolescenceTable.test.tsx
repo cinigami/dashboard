@@ -13,7 +13,9 @@ describe('ObsolescenceTable', () => {
     render(<ObsolescenceTable data={mockInstrumentRows} />);
 
     // Mock data has 2 items with "ALS" in alarm description
-    expect(screen.getByText(/2 items/)).toBeInTheDocument();
+    // Count is now displayed separately
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('Items')).toBeInTheDocument();
     expect(screen.getByText('ALS - Obsolete model')).toBeInTheDocument();
     expect(screen.getByText('ALS - Obsolete firmware')).toBeInTheDocument();
   });
