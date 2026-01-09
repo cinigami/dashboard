@@ -125,7 +125,7 @@ export default function FiltersBar({
   };
 
   return (
-    <Card className="p-8 sticky top-0 z-10">
+    <Card className="p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
