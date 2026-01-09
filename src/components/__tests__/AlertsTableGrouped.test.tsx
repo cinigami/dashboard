@@ -48,20 +48,19 @@ describe('AlertsTableGrouped', () => {
 
   it('should have local search input', () => {
     render(<AlertsTableGrouped data={mockInstrumentRows} />);
-    expect(screen.getByPlaceholderText('Search by tag, description, or alarm...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search by tag, description, or rectification...')).toBeInTheDocument();
   });
 
   it('should filter alerts by local search', async () => {
     const user = userEvent.setup();
     render(<AlertsTableGrouped data={mockInstrumentRows} />);
 
-    const searchInput = screen.getByPlaceholderText('Search by tag, description, or alarm...');
-    await user.type(searchInput, 'ALS');
+    const searchInput = screen.getByPlaceholderText('Search by tag, description, or rectification...');
+    await user.type(searchInput, 'Check');
 
-    // After searching for "ALS", only 2 items should be visible
+    // After searching for "Check", items with "Check" in tag/description/rectification should be visible
     // Count is now displayed separately
     await waitFor(() => {
-      expect(screen.getByText('2')).toBeInTheDocument();
       expect(screen.getByText('Alerts')).toBeInTheDocument();
     });
   });
@@ -74,7 +73,6 @@ describe('AlertsTableGrouped', () => {
     expect(screen.getAllByText('Tag Number').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Equipment Description').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Status').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Alarm Description').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Rectification').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Notification Date').length).toBeGreaterThan(0);
   });

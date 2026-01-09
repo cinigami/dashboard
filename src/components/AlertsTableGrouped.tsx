@@ -37,7 +37,7 @@ export default function AlertsTableGrouped({ data }: AlertsTableGroupedProps) {
       row =>
         row.tagNumber.toLowerCase().includes(searchLower) ||
         row.equipmentDescription.toLowerCase().includes(searchLower) ||
-        row.alarmDescription.toLowerCase().includes(searchLower)
+        row.rectification.toLowerCase().includes(searchLower)
     );
   }, [alertsData, localSearch]);
 
@@ -74,10 +74,6 @@ export default function AlertsTableGrouped({ data }: AlertsTableGroupedProps) {
         const status = info.getValue();
         return <Badge status={status} variant="soft" size="sm" />;
       },
-    }),
-    columnHelper.accessor('alarmDescription', {
-      header: 'Alarm Description',
-      cell: info => info.getValue(),
     }),
     columnHelper.accessor('rectification', {
       header: 'Rectification',
@@ -126,7 +122,7 @@ export default function AlertsTableGrouped({ data }: AlertsTableGroupedProps) {
           type="text"
           value={localSearch}
           onChange={e => setLocalSearch(e.target.value)}
-          placeholder="Search by tag, description, or alarm..."
+          placeholder="Search by tag, description, or rectification..."
           className="block w-full md:w-96 rounded-lg border-gray-300 shadow-sm focus-premium text-sm px-4 py-2.5"
         />
       </div>
