@@ -182,18 +182,19 @@ export default function ExportModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold mb-2" style={{ color: PETRONAS_COLORS.darkBlue }}>
-          Export Dashboard Data
-        </h2>
-        <p className="text-sm text-gray-600">
-          Configure export settings and preview data before generating documents
-        </p>
-      </div>
+      <div className="p-8">
+        {/* Header */}
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold mb-2" style={{ color: PETRONAS_COLORS.darkBlue }}>
+            Export Dashboard Data
+          </h2>
+          <p className="text-sm text-gray-600">
+            Configure export settings and preview data before generating documents
+          </p>
+        </div>
 
-      {/* Two-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Two-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column: Settings */}
         <div className="space-y-6">
           {/* Format Tabs */}
@@ -427,27 +428,28 @@ export default function ExportModal({
         </div>
       </div>
 
-      {/* Footer Actions */}
-      <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-end gap-3">
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={onClose}
-          disabled={isExporting}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={handleExport}
-          disabled={isExporting || previewData.length === 0 || selectedColumns.length === 0}
-          isLoading={isExporting}
-        >
-          {isExporting
-            ? `Generating ${exportFormat.toUpperCase()}...`
-            : `Export ${exportFormat.toUpperCase()}`}
-        </Button>
+        {/* Footer Actions */}
+        <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-end gap-3">
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={onClose}
+            disabled={isExporting}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleExport}
+            disabled={isExporting || previewData.length === 0 || selectedColumns.length === 0}
+            isLoading={isExporting}
+          >
+            {isExporting
+              ? `Generating ${exportFormat.toUpperCase()}...`
+              : `Export ${exportFormat.toUpperCase()}`}
+          </Button>
+        </div>
       </div>
     </Modal>
   );
